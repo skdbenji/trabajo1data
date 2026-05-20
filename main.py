@@ -3,6 +3,7 @@
 # ======================================================
 
 import pandas as pd
+import unicodedata
 
 from sklearn.preprocessing import LabelEncoder
 
@@ -18,6 +19,21 @@ from sklearn.metrics import (
     mean_absolute_error,
     r2_score
 )
+
+# ======================================================
+# FUNCIÓN PARA LIMPIAR TEXTO
+# ======================================================
+
+def limpiar_texto(texto):
+
+    texto = str(texto).strip().lower()
+
+    texto = ''.join(
+        c for c in unicodedata.normalize('NFD', texto)
+        if unicodedata.category(c) != 'Mn'
+    )
+
+    return texto
 
 # ======================================================
 # URLS ORIGINALES
@@ -59,7 +75,9 @@ col_atenciones = "Total"
 
 columnas_a_cargar = [
     col_fecha,
-    col_atenciones
+    col_atenciones,
+    'NombreRegion',
+    'NombreComuna'
 ]
 
 # ======================================================
@@ -97,37 +115,138 @@ df_completo = pd.concat(
 
 print("\nIniciando limpieza de datos...")
 
+# ======================================================
 # ELIMINAR ESPACIOS EN COLUMNAS
+# ======================================================
+
 df_completo.columns = df_completo.columns.str.strip()
 
+# ======================================================
+# LIMPIAR TEXTO REGIONES Y COMUNAS
+# ======================================================
+
+df_completo['NombreRegion'] = df_completo[
+    'NombreRegion'
+].apply(limpiar_texto)
+# ======================================================
+# REGIONES VÁLIDAS DE CHILE
+# ======================================================
+regiones_validas = [
+
+    'arica y parinacota',
+
+    'tarapaca',
+
+    'antofagasta',
+
+    'atacama',
+
+    'coquimbo',
+
+    'valparaiso',
+
+    'metropolitana',
+
+    'ohiggins',
+
+    'maule',
+
+    'nuble',
+
+    'biobio',
+
+    'araucania',
+
+    'rios',
+
+    'lagos',
+
+    'aysen',
+
+    'magallanes y de la antartica chilena'
+]
+# NORMALIZAR NOMBRES DE REGIONES
+
+df_completo['NombreRegion'] = df_completo[
+    'NombreRegion'
+].str.replace('de la ', '', regex=False)
+
+df_completo['NombreRegion'] = df_completo[
+    'NombreRegion'
+].str.replace('de los ', '', regex=False)
+
+df_completo['NombreRegion'] = df_completo[
+    'NombreRegion'
+].str.replace('de ', '', regex=False)
+
+df_completo['NombreRegion'] = df_completo[
+    'NombreRegion'
+].str.replace('del ', '', regex=False)
+
+# ======================================================
+# FILTRAR SOLO REGIONES VÁLIDAS
+# ======================================================
+
+df_completo = df_completo[
+    df_completo['NombreRegion']
+    .isin(regiones_validas)
+]
+
+df_completo['NombreComuna'] = df_completo[
+    'NombreComuna'
+].apply(limpiar_texto)
+
+# ======================================================
 # CONVERTIR FECHAS
+# ======================================================
+
 df_completo[col_fecha] = pd.to_datetime(
     df_completo[col_fecha],
     errors='coerce',
     dayfirst=True
 )
 
+# ======================================================
 # CONVERTIR A NUMÉRICO
+# ======================================================
+
 df_completo[col_atenciones] = pd.to_numeric(
     df_completo[col_atenciones],
     errors='coerce'
 )
 
+# ======================================================
 # MOSTRAR NULOS
+# ======================================================
+
 print("\nValores nulos encontrados:")
 print(df_completo.isnull().sum())
 
+# ======================================================
 # ELIMINAR FILAS VACÍAS
+# ======================================================
+
 df_completo = df_completo.dropna(
-    subset=[col_fecha, col_atenciones]
+    subset=[
+        col_fecha,
+        col_atenciones,
+        'NombreRegion',
+        'NombreComuna'
+    ]
 )
 
-# ELIMINAR NEGATIVOS
+# ======================================================
+# ELIMINAR VALORES NEGATIVOS
+# ======================================================
+
 df_completo = df_completo[
     df_completo[col_atenciones] >= 0
 ]
 
-# ELIMINAR OUTLIERS
+# ======================================================
+# ELIMINAR OUTLIERS EXTREMOS
+# ======================================================
+
 limite_superior = df_completo[
     col_atenciones
 ].quantile(0.99)
@@ -136,14 +255,28 @@ df_completo = df_completo[
     df_completo[col_atenciones] <= limite_superior
 ]
 
-# VALIDAR AÑOS
+# ======================================================
+# VALIDAR RANGO DE AÑOS
+# ======================================================
+
 df_completo = df_completo[
     (df_completo[col_fecha].dt.year >= 2023)
     &
     (df_completo[col_fecha].dt.year <= 2024)
 ]
 
+# ======================================================
+# ELIMINAR COMUNAS VACÍAS
+# ======================================================
+
+df_completo = df_completo[
+    df_completo['NombreComuna'].str.len() > 2
+]
+
+# ======================================================
 # ORDENAR POR FECHA
+# ======================================================
+
 df_completo = df_completo.sort_values(
     by=col_fecha
 )
@@ -154,7 +287,7 @@ print("\nCantidad de registros:")
 print(len(df_completo))
 
 # ======================================================
-# FUNCIÓN PARA ESTACIONES
+# FUNCIÓN PARA ASIGNAR ESTACIONES
 # ======================================================
 
 print("\nClasificando registros por estación...")
@@ -265,7 +398,7 @@ df_completo['Estacion_Num'] = encoder.fit_transform(
 )
 
 # ======================================================
-# VARIABLES X E y
+# VARIABLES PREDICTORAS Y OBJETIVO
 # ======================================================
 
 X = df_completo[
@@ -273,6 +406,13 @@ X = df_completo[
 ]
 
 y = df_completo[col_atenciones]
+
+# ======================================================
+# VALIDAR CANTIDAD DE DATOS
+# ======================================================
+
+print("\nCantidad de muestras para ML:")
+print(len(X))
 
 # ======================================================
 # DIVIDIR DATOS
