@@ -1,11 +1,16 @@
 IdEstablecimiento;NEstablecimiento;IdCausa;GlosaCausa;Total;Menores_1;De_1_a_4;De_5_a_14;De_15_a_64;De_65_y_mas;fecha;semana;GLOSATIPOESTABLECIMIENTO;GLOSATIPOATENCION;GlosaTipoCampana;CodigoRegion;NombreRegion;CodigoDependencia;NombreDependencia;CodigoComuna;NombreComuna
-23-985;SAPU Dr. Martin;40;Trastornos mentales;3;0;0;0;2;1;03-07-2023;27;SAPU;Indiferenciada;Ninguna;10;De Los Lagos;23;Osorno;10301;Osorno
-21-109;Hospital Dr. Hernan;40;Trastornos mentales;1;0;0;0;1;0;03-07-2023;27;Hospital;Indiferenciada;Invierno;9;De La Araucania;21;Araucania Sur;9101;Temuco
-13-920;SUR Los Bajos;40;Trastornos mentales;1;0;0;0;1;0;03-07-2023;27;SUR;Indiferenciada;Ninguna;13;Metropolitana;13;Metropolitana;13403;Calera de Tango
-03-910;SAR Alemania;40;Trastornos mentales;0;0;0;0;0;0;03-07-2023;27;SAR;Indiferenciada;Ninguna;2;De Antofagasta;3;Antofagasta;2201;Calama
-16-107;Hospital de Constitucion;40;Trastornos mentales;0;0;0;0;0;0;03-07-2023;27;Hospital;Indiferenciada;Ninguna;7;Del Maule;16;Del Maule;7102;Constitucion
-06-829;SAR Nestor;37;Ideacion Suicida;2;0;0;0;2;0;04-07-2023;27;SAR;Indiferenciada;Ninguna;5;De Valparaiso;6;Valparaiso;5601;San Antonio
-21-920;SAPU Lautaro;37;Ideacion Suicida;1;0;0;0;1;0;04-07-2023;27;SAPU;Indiferenciada;Ninguna;9;De La Araucania;21;Araucania Sur;9108;Lautaro
-20-103;Hospital de Nacimiento;37;Ideacion Suicida;0;0;0;0;0;0;04-07-2023;27;Hospital;Indiferenciada;Ninguna;8;Del Biobio;20;Biobio;8306;Nacimiento
-05-104;Hospital de Salamanca;37;Ideacion Suicida;4;0;0;1;3;0;04-07-2023;27;Hospital;Indiferenciada;Ninguna;4;De Coquimbo;5;Coquimbo;4204;Salamanca
-24-810;SAR Puerto Varas;39;Trastornos depresivos;1;0;0;0;1;0;04-07-2023;27;SAR;Indiferenciada;Ninguna;10;De Los Lagos;24;Del Reloncavi;10109;Puerto Varas
+23-985;SAPU Dr. Martin;40;Trastornos mentales;3;0;0;0;2;1;03-01-2023;1;SAPU;Indiferenciada;Verano;10;De Los Lagos;23;Osorno;10301;Osorno
+21-109;Hospital Dr. Hernan;40;Trastornos mentales;5;0;1;1;2;1;15-01-2023;2;Hospital;Indiferenciada;Verano;9;De La Araucania;21;Araucania Sur;9101;Temuco
+13-920;SUR Los Bajos;37;Ideacion Suicida;2;0;0;0;2;0;10-02-2023;6;SUR;Indiferenciada;Verano;13;Metropolitana;13;Metropolitana;13403;Calera de Tango
+03-910;SAR Alemania;39;Trastornos depresivos;4;0;0;1;3;0;18-03-2023;11;SAR;Indiferenciada;Otoño;2;De Antofagasta;3;Antofagasta;2201;Calama
+16-107;Hospital de Constitucion;40;Trastornos mentales;1;0;0;0;1;0;05-04-2023;14;Hospital;Indiferenciada;Otoño;7;Del Maule;16;Del Maule;7102;Constitucion
+06-829;SAR Nestor;37;Ideacion Suicida;6;0;1;1;4;0;20-05-2023;20;SAR;Indiferenciada;Otoño;5;De Valparaiso;6;Valparaiso;5601;San Antonio
+21-920;SAPU Lautaro;37;Ideacion Suicida;2;0;0;0;2;0;03-07-2023;27;SAPU;Indiferenciada;Invierno;9;De La Araucania;21;Araucania Sur;9108;Lautaro
+20-103;Hospital de Nacimiento;39;Trastornos depresivos;7;0;0;2;5;0;18-07-2023;29;Hospital;Indiferenciada;Invierno;8;Del Biobio;20;Biobio;8306;Nacimiento
+05-104;Hospital de Salamanca;37;Ideacion Suicida;4;0;0;1;3;0;12-08-2023;32;Hospital;Indiferenciada;Invierno;4;De Coquimbo;5;Coquimbo;4204;Salamanca
+24-810;SAR Puerto Varas;39;Trastornos depresivos;3;0;0;0;3;0;15-09-2023;37;SAR;Indiferenciada;Invierno;10;De Los Lagos;24;Del Reloncavi;10109;Puerto Varas
+13-850;SAPU Central;40;Trastornos mentales;5;0;1;0;4;0;05-10-2023;40;SAPU;Indiferenciada;Primavera;13;Metropolitana;13;Metropolitana;13101;Santiago
+08-910;SAR Concepcion;39;Trastornos depresivos;2;0;0;0;2;0;20-10-2023;42;SAR;Indiferenciada;Primavera;8;Del Biobio;20;Biobio;8101;Concepcion
+07-720;Hospital Talca;37;Ideacion Suicida;6;0;1;1;4;0;11-11-2023;45;Hospital;Indiferenciada;Primavera;7;Del Maule;16;Del Maule;7101;Talca
+15-830;SUR Arica;40;Trastornos mentales;1;0;0;0;1;0;25-11-2023;47;SUR;Indiferenciada;Primavera;15;De Arica y Parinacota;15;Arica;15101;Arica
+13-901;SAPU Norte;39;Trastornos depresivos;8;0;1;1;5;1;15-12-2023;50;SAPU;Indiferenciada;Verano;13;Metropolitana;13;Metropolitana;13102;Independencia
