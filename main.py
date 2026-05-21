@@ -183,6 +183,14 @@ df_completo['NombreRegion'] = df_completo[
     'NombreRegion'
 ].str.replace('del ', '', regex=False)
 
+df_completo['NombreRegion'] = df_completo[
+    'NombreRegion'
+].str.replace('region ', '', regex=False)
+
+df_completo['NombreRegion'] = df_completo[
+    'NombreRegion'
+].str.strip()
+
 # ======================================================
 # FILTRAR SOLO REGIONES VÁLIDAS
 # ======================================================
@@ -341,7 +349,17 @@ print("\n" + "=" * 60)
 print(" ESTADÍSTICA DESCRIPTIVA ")
 print("=" * 60)
 
-estadisticas = df_completo.groupby(
+print("\n Metricas globales del Dataset:")
+resumen_gobal = df_completo[col_atenciones].describe()
+asimetria = df_completo[col_atenciones].skew()
+curtosis = df_completo[col_atenciones].kurt()
+
+print(resumen_global.round(2))
+print(f"Asimetria: {asimetria:2f} (valores > 0 implican sesgo a la derecha)")
+print(f"Curtosis: {curtosis:2f} (valores altos indican presencia de eventos atipicos o brotes)")
+
+print("\n Analisis descriptivo por estacion del año: ")
+estadisticas_estacion = df_completo.groupby(
     'Estacion'
 )[col_atenciones].agg(
 
@@ -361,7 +379,21 @@ estadisticas = df_completo.groupby(
 )
 
 print("\n")
-print(estadisticas.round(2))
+print(estadisticas_estacion.round(2))
+
+#ESTADISTICAS COMPARATIVA POR AÑO
+print("\n Comparativa temporal 2023 vs 2024: ")
+df_completo['Año_Temporal'] = df_completo[col_fecha].dt.year
+estadisticas_ano = df_completo.groupby('Año_Temporal')[col_atenciones].agg(
+    Total_Atenciones='sum',
+    Promedio_Diario='mean',
+    Maximo_en_un_Dia='max'
+)
+print(estadisticas_ano.round(2))
+
+print("\n Top 5 Regiones con mayor promedio de atencion de urgencia: ")
+estadisticas_region = df_completo.groupby('NombreRegion')[col_atenciones].mean().sort_values(ascending=False).head(5)
+print(estadisticas_region.round(2))
 
 # ======================================================
 # MACHINE LEARNING
