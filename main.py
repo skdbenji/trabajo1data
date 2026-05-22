@@ -92,15 +92,13 @@ df = pd.DataFrame(todos_los_registros)
 df.columns = df.columns.str.strip()
 
 # ======================================================
-# LIMPIAR TEXTO
+# LIMPIAR COLUMNAS TEXTO
 # ======================================================
 
 columnas_texto = [
 
     'GLOSA_SSS',
-
     'ESTABLECIMIENTO',
-
     'AREA_FUNCIONAL'
 ]
 
@@ -119,27 +117,16 @@ for columna in columnas_texto:
 columnas_numericas = [
 
     'MES',
-
     'DIAS_CAMAS_OCUPADAS',
-
     'DIAS_CAMAS_DISPONIBLES',
-
     'DIAS_ESTADA',
-
     'NUMERO_EGRESOS',
-
     'EGRESOS_FALLECIDOS',
-
     'TRASLADOS',
-
     'INDICE_OCUPACIONAL',
-
     'PROMEDIO_CAMAS_DISPONIBLE',
-
     'PROMEDIO_DIAS_ESTADA',
-
     'LETALIDAD',
-
     'INDICE_ROTACION'
 ]
 
@@ -159,9 +146,7 @@ for columna in columnas_numericas:
 df = df.dropna(subset=[
 
     'MES',
-
     'PROMEDIO_DIAS_ESTADA',
-
     'INDICE_OCUPACIONAL'
 ])
 
@@ -240,9 +225,7 @@ print(
 # ======================================================
 
 encoder_region = LabelEncoder()
-
 encoder_area = LabelEncoder()
-
 encoder_estacion = LabelEncoder()
 
 df['REGION_NUM'] = encoder_region.fit_transform(
@@ -264,29 +247,17 @@ df['ESTACION_NUM'] = encoder_estacion.fit_transform(
 X = df[[
 
     'MES',
-
     'REGION_NUM',
-
     'AREA_NUM',
-
     'DIAS_CAMAS_OCUPADAS',
-
     'DIAS_CAMAS_DISPONIBLES',
-
     'NUMERO_EGRESOS',
-
     'EGRESOS_FALLECIDOS',
-
     'TRASLADOS',
-
     'INDICE_OCUPACIONAL',
-
     'PROMEDIO_CAMAS_DISPONIBLE',
-
     'LETALIDAD',
-
     'INDICE_ROTACION',
-
     'ESTACION_NUM'
 ]]
 
@@ -303,11 +274,8 @@ y = df['PROMEDIO_DIAS_ESTADA']
 X_train, X_test, y_train, y_test = train_test_split(
 
     X,
-
     y,
-
     test_size=0.2,
-
     random_state=42
 )
 
@@ -338,7 +306,6 @@ r2_lr = r2_score(
 modelo_tree = DecisionTreeRegressor(
 
     max_depth=10,
-
     random_state=42
 )
 
@@ -363,13 +330,11 @@ r2_tree = r2_score(
 modelo_rf = RandomForestRegressor(
 
     n_estimators=80,
-
     max_depth=12,
-
     random_state=42,
-
     n_jobs=-1
 )
+
 modelo_rf.fit(X_train, y_train)
 
 pred_rf = modelo_rf.predict(X_test)
@@ -396,13 +361,9 @@ mape_rf = mean_absolute_percentage_error(
 scores = cross_val_score(
 
     modelo_rf,
-
     X,
-
     y,
-
     cv=5,
-
     scoring='r2'
 )
 
@@ -446,9 +407,7 @@ print(
 resultados = {
 
     "Regresión Lineal": r2_lr,
-
     "Árbol de Decisión": r2_tree,
-
     "Random Forest": r2_rf
 }
 
@@ -474,14 +433,12 @@ print("========================================")
 importancias = pd.DataFrame({
 
     'Variable': X.columns,
-
     'Importancia': modelo_rf.feature_importances_
 })
 
 importancias = importancias.sort_values(
 
     by='Importancia',
-
     ascending=False
 )
 
@@ -512,29 +469,17 @@ print("========================================")
 nueva_prediccion = pd.DataFrame({
 
     'MES': [7],
-
     'REGION_NUM': [3],
-
     'AREA_NUM': [5],
-
     'DIAS_CAMAS_OCUPADAS': [180],
-
     'DIAS_CAMAS_DISPONIBLES': [200],
-
     'NUMERO_EGRESOS': [50],
-
     'EGRESOS_FALLECIDOS': [5],
-
     'TRASLADOS': [20],
-
     'INDICE_OCUPACIONAL': [90],
-
     'PROMEDIO_CAMAS_DISPONIBLE': [6],
-
     'LETALIDAD': [10],
-
     'INDICE_ROTACION': [2],
-
     'ESTACION_NUM': [0]
 })
 
