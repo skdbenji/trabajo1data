@@ -6,6 +6,7 @@ import urllib.request
 import json
 import unicodedata
 import matplotlib.pyplot as plt
+import seaborn as sns 
 
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split, cross_val_score
@@ -91,6 +92,22 @@ df = df[df['PROMEDIO_DIAS_ESTADA'] <= limite_superior]
 
 print(f"Registros válidos: {len(df)}")
 
+#=======================================================
+# ESTÁDISTICAS DESCRIPTIVAS
+#=======================================================
+print("\n========================================")
+print(" ESTADÍSTICAS DESCRIPTIVAS ")
+print("========================================")
+media_estadia = df['PROMEDIO_DIAS_ESTADA'].mean()
+mediana_estadia = df['PROMEDIO_DIAS_ESTADA'].median()
+moda_estadia = df['PROMEDIO_DIAS_ESTADA'].mode()[0]
+print(f"Promedio días estadía: {round(media_estadia, 2)}")
+print(f"Mediana días estadía: {round(mediana_estadia, 2)}")
+print(f"Moda días estadía: {round(moda_estadia, 2)}")
+
+resumen= df[['DIAS_CAMAS_OCUPADAS', 'NUMERO_EGRESOS', 'PROMEDIO_DIAS_ESTADA']].describe()
+print(resumen.round(2))
+
 # ======================================================
 # CREAR ESTACIONES Y ESTADÍSTICAS
 # ======================================================
@@ -120,6 +137,17 @@ print(" CORRELACIÓN CON ESTADÍA ")
 print("========================================")
 correlaciones = df[columnas_numericas].corr()
 print(correlaciones['PROMEDIO_DIAS_ESTADA'].sort_values(ascending=False))
+plt.figure(figsize=(10, 8)) 
+sns.heatmap(
+    correlaciones, 
+    annot=True,         
+    cmap='coolwarm',    
+    fmt=".2f",          # rojo alta correlacion, azul baja
+    linewidths=0.5      
+)
+plt.title('Mapa de Calor de Correlaciones Hospitalarias', fontsize=14)
+plt.tight_layout()
+plt.show()
 
 # ======================================================
 # CODIFICAR VARIABLES Y DIVIDIR DATOS
