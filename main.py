@@ -254,6 +254,57 @@ print(" VALIDACIÓN CRUZADA ")
 print("========================================")
 print(f"\nR2 promedio CV: {round(scores.mean(), 3)}")
 
+resultados = {
+    "Regresión Lineal Simple": r2_lr_simple,
+    "Regresión Lineal Múltiple": r2_lr_multiple,
+    "Árbol de Decisión": r2_tree,
+    "Random Forest": r2_rf
+}
+
+plt.figure(figsize=(9, 5))
+modelos_nombres = list(resultados.keys())
+r2_valores = list(resultados.values())
+
+sns.barplot(x=r2_valores, y=modelos_nombres, palette="Blues_r")
+
+plt.title('Comparación del Rendimiento de los Modelos ($R^2$)', fontsize=14)
+plt.xlabel('Coeficiente de Determinación ($R^2$)')
+plt.ylabel('Modelos Evaluados')
+plt.xlim(0, 1.0) # El R2 máximo es 1
+
+for index, value in enumerate(r2_valores):
+    plt.text(value + 0.01, index, f'{round(value, 2)}', va='center', fontsize=11)
+
+plt.tight_layout()
+plt.show()
+# ======================================================
+
+print("\n========================================")
+print(" RESULTADOS MODELOS ")
+print("========================================")
+
+print("\nRegresión Lineal Simple")
+print(f"MAE : {round(mae_lr_simple, 2)}")
+print(f"R2  : {round(r2_lr_simple, 2)}")
+
+print("\nRegresión Lineal Múltiple")
+print(f"MAE : {round(mae_lr_multiple, 2)}")
+print(f"R2  : {round(r2_lr_multiple, 2)}")
+
+print("\nÁrbol de Decisión")
+print(f"MAE : {round(mae_tree, 2)}")
+print(f"R2  : {round(r2_tree, 2)}")
+
+print("\nRandom Forest")
+print(f"MAE : {round(mae_rf, 2)}")
+print(f"R2  : {round(r2_rf, 2)}")
+print(f"MAPE: {round(mape_rf * 100, 2)}%")
+
+print("\n========================================")
+print(" VALIDACIÓN CRUZADA ")
+print("========================================")
+print(f"\nR2 promedio CV: {round(scores.mean(), 3)}")
+
 # ======================================================
 # MEJOR MODELO Y VARIABLES IMPORTANTES
 # ======================================================
