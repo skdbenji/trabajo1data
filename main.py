@@ -268,6 +268,20 @@ importancias = pd.DataFrame({
 })
 importancias = importancias.sort_values(by='Importancia', ascending=False)
 print(importancias.head(10))
+plt.figure(figsize=(10, 6))
+
+sns.barplot(
+    x='Importancia', 
+    y='Variable', 
+    data=importancias.head(10),
+    palette='viridis' 
+)
+
+plt.title('Top 10 Variables que más impactan la Estadía Hospitalaria')
+plt.xlabel('Nivel de Importancia (Random Forest)')
+plt.ylabel('Variable Predictora')
+plt.tight_layout()
+plt.show()
 
 # ======================================================
 # PREDICCIÓN FUTURA
