@@ -209,6 +209,17 @@ mae_rf = mean_absolute_error(y_test, pred_rf)
 r2_rf = r2_score(y_test, pred_rf)
 mape_rf = mean_absolute_percentage_error(y_test, pred_rf)
 
+plt.figure(figsize=(8, 6))
+
+sns.scatterplot(x=y_test, y=pred_rf, alpha=0.5, color='teal')
+
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], color='red', lw=2, linestyle='--')
+
+plt.title('Predicciones de Random Forest vs. Valores Reales', fontsize=14)
+plt.xlabel('Valores Reales (Días de Estadía)')
+plt.ylabel('Valores Predichos por el Modelo')
+plt.tight_layout()
+plt.show()
 # ======================================================
 # VALIDACIÓN CRUZADA
 # ======================================================
@@ -246,6 +257,32 @@ print(f"\nR2 promedio CV: {round(scores.mean(), 3)}")
 # ======================================================
 # MEJOR MODELO Y VARIABLES IMPORTANTES
 # ======================================================
+print("\n========================================")
+print(" RESULTADOS MODELOS ")
+print("========================================")
+
+print("\nRegresión Lineal Simple")
+print(f"MAE : {round(mae_lr_simple, 2)}")
+print(f"R2  : {round(r2_lr_simple, 2)}")
+
+print("\nRegresión Lineal Múltiple")
+print(f"MAE : {round(mae_lr_multiple, 2)}")
+print(f"R2  : {round(r2_lr_multiple, 2)}")
+
+print("\nÁrbol de Decisión")
+print(f"MAE : {round(mae_tree, 2)}")
+print(f"R2  : {round(r2_tree, 2)}")
+
+print("\nRandom Forest")
+print(f"MAE : {round(mae_rf, 2)}")
+print(f"R2  : {round(r2_rf, 2)}")
+print(f"MAPE: {round(mape_rf * 100, 2)}%")
+
+print("\n========================================")
+print(" VALIDACIÓN CRUZADA ")
+print("========================================")
+print(f"\nR2 promedio CV: {round(scores.mean(), 3)}")
+
 resultados = {
     "Regresión Lineal Simple": r2_lr_simple,
     "Regresión Lineal Múltiple": r2_lr_multiple,
