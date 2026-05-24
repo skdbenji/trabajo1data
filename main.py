@@ -29,8 +29,9 @@ from sklearn.metrics import (
 
 import numpy as np
 
+
 # ======================================================
-# FUNCIÓN PARA LIMPIAR TEXTO
+# FUNCIÓN LIMPIAR TEXTO
 # ======================================================
 
 def limpiar_texto(texto):
@@ -44,167 +45,133 @@ def limpiar_texto(texto):
 
     return texto
 
-# ======================================================
-# DESCARGA DE DATOS DESDE API
-# ======================================================
-
-print("\n========================================")
-print(" DESCARGANDO DATOS HOSPITALARIOS ")
-print("========================================")
-
-offset = 0
-limite_registros = 5000
-
-lista_registros = []
-
-while True:
-
-    url = (
-        "https://datos.gob.cl/api/3/action/"
-        "datastore_search?"
-        "resource_id=657cc933-eac8-4bfc-b004-c4d6dcd988a8"
-        f"&limit={limite_registros}"
-        f"&offset={offset}"
-    )
-
-    respuesta = urllib.request.urlopen(url)
-
-    datos = json.loads(
-        respuesta.read()
-    )
-
-    registros = datos['result']['records']
-
-    if len(registros) == 0:
-        break
-
-    lista_registros.extend(registros)
-
-    offset += limite_registros
-
-print(f"\nCantidad de registros descargados: {len(lista_registros)}")
 
 # ======================================================
-# CREAR DATAFRAME
+# DESCARGAR DATOS DESDE API
 # ======================================================
 
-df = pd.DataFrame(lista_registros)
+def descargar_datos():
 
-# ======================================================
-# LIMPIAR NOMBRES DE COLUMNAS
-# ======================================================
+    print("\n========================================")
+    print(" DESCARGANDO DATOS HOSPITALARIOS ")
+    print("========================================")
 
-df.columns = df.columns.str.strip()
+    offset = 0
+    limite_registros = 5000
 
-# ======================================================
-# LIMPIAR COLUMNAS DE TEXTO
-# ======================================================
+    lista_registros = []
 
-columnas_texto = [
+    while True:
 
-    'GLOSA_SSS',
-    'ESTABLECIMIENTO',
-    'AREA_FUNCIONAL'
-]
-
-for columna in columnas_texto:
-
-    if columna in df.columns:
-
-        df[columna] = df[columna].apply(
-            limpiar_texto
+        url = (
+            "https://datos.gob.cl/api/3/action/"
+            "datastore_search?"
+            "resource_id=657cc933-eac8-4bfc-b004-c4d6dcd988a8"
+            f"&limit={limite_registros}"
+            f"&offset={offset}"
         )
 
-# ======================================================
-# CONVERTIR COLUMNAS A NUMÉRICO
-# ======================================================
+        respuesta = urllib.request.urlopen(url)
 
-columnas_numericas = [
-
-    'MES',
-    'DIAS_CAMAS_OCUPADAS',
-    'DIAS_CAMAS_DISPONIBLES',
-    'DIAS_ESTADA',
-    'NUMERO_EGRESOS',
-    'EGRESOS_FALLECIDOS',
-    'TRASLADOS',
-    'INDICE_OCUPACIONAL',
-    'PROMEDIO_CAMAS_DISPONIBLE',
-    'PROMEDIO_DIAS_ESTADA',
-    'LETALIDAD',
-    'INDICE_ROTACION'
-]
-
-for columna in columnas_numericas:
-
-    if columna in df.columns:
-
-        df[columna] = pd.to_numeric(
-            df[columna],
-            errors='coerce'
+        datos = json.loads(
+            respuesta.read()
         )
 
-# ======================================================
-# ELIMINAR DATOS NULOS
-# ======================================================
+        registros = datos['result']['records']
 
-df = df.dropna(subset=[
+        if len(registros) == 0:
+            break
 
-    'MES',
-    'PROMEDIO_DIAS_ESTADA',
-    'INDICE_OCUPACIONAL'
-])
+        lista_registros.extend(registros)
 
-# ======================================================
-# ELIMINAR OUTLIERS
-# ======================================================
+        offset += limite_registros
 
-limite_maximo = df[
-    'PROMEDIO_DIAS_ESTADA'
-].quantile(0.99)
+    print(
+        f"\nCantidad de registros descargados: "
+        f"{len(lista_registros)}"
+    )
 
-df = df[
-    df['PROMEDIO_DIAS_ESTADA'] <= limite_maximo
-]
+    return pd.DataFrame(lista_registros)
 
-print(f"\nCantidad de registros válidos: {len(df)}")
 
 # ======================================================
-# ESTADÍSTICAS DESCRIPTIVAS
+# PREPARAR DATAFRAME
 # ======================================================
 
-print("\n========================================")
-print(" ESTADÍSTICAS DESCRIPTIVAS ")
-print("========================================")
+def preparar_dataframe(df):
 
-promedio_estadia = df[
-    'PROMEDIO_DIAS_ESTADA'
-].mean()
+    # LIMPIAR NOMBRES COLUMNAS
+    df.columns = df.columns.str.strip()
 
-mediana_estadia = df[
-    'PROMEDIO_DIAS_ESTADA'
-].median()
+    # COLUMNAS TEXTO
+    columnas_texto = [
 
-moda_estadia = df[
-    'PROMEDIO_DIAS_ESTADA'
-].mode()[0]
+        'GLOSA_SSS',
+        'ESTABLECIMIENTO',
+        'AREA_FUNCIONAL'
+    ]
 
-print(f"\nPromedio estadía: {round(promedio_estadia,2)} días")
-print(f"Mediana estadía : {round(mediana_estadia,2)} días")
-print(f"Moda estadía    : {round(moda_estadia,2)} días")
+    for columna in columnas_texto:
 
-resumen_estadistico = df[[
+        if columna in df.columns:
 
-    'DIAS_CAMAS_OCUPADAS',
-    'NUMERO_EGRESOS',
-    'PROMEDIO_DIAS_ESTADA'
-]].describe()
+            df[columna] = df[columna].apply(
+                limpiar_texto
+            )
 
-print("\nResumen estadístico:")
-print(resumen_estadistico.round(2))
+    # COLUMNAS NUMÉRICAS
+    columnas_numericas = [
+
+        'MES',
+        'DIAS_CAMAS_OCUPADAS',
+        'DIAS_CAMAS_DISPONIBLES',
+        'DIAS_ESTADA',
+        'NUMERO_EGRESOS',
+        'EGRESOS_FALLECIDOS',
+        'TRASLADOS',
+        'INDICE_OCUPACIONAL',
+        'PROMEDIO_CAMAS_DISPONIBLE',
+        'PROMEDIO_DIAS_ESTADA',
+        'LETALIDAD',
+        'INDICE_ROTACION'
+    ]
+
+    for columna in columnas_numericas:
+
+        if columna in df.columns:
+
+            df[columna] = pd.to_numeric(
+                df[columna],
+                errors='coerce'
+            )
+
+    # ELIMINAR NULOS
+    df = df.dropna(subset=[
+
+        'MES',
+        'PROMEDIO_DIAS_ESTADA',
+        'INDICE_OCUPACIONAL'
+    ])
+
+    # ELIMINAR OUTLIERS
+    limite_maximo = df[
+        'PROMEDIO_DIAS_ESTADA'
+    ].quantile(0.99)
+
+    df = df[
+        df['PROMEDIO_DIAS_ESTADA'] <= limite_maximo
+    ]
+
+    print(
+        f"\nCantidad de registros válidos: "
+        f"{len(df)}"
+    )
+
+    return df
+
 
 # ======================================================
-# CREAR ESTACIONES DEL AÑO
+# CREAR ESTACIONES
 # ======================================================
 
 def obtener_estacion(mes):
@@ -221,536 +188,574 @@ def obtener_estacion(mes):
     else:
         return "Primavera"
 
-df['ESTACION'] = df['MES'].apply(
-    obtener_estacion
-)
 
 # ======================================================
-# PROMEDIO POR ESTACIÓN
+# ESTADÍSTICAS
 # ======================================================
 
-print("\n========================================")
-print(" PROMEDIO DE ESTADÍA POR ESTACIÓN ")
-print("========================================")
+def mostrar_estadisticas(df):
 
-promedio_por_estacion = df.groupby(
-    'ESTACION'
-)['PROMEDIO_DIAS_ESTADA'].mean()
+    print("\n========================================")
+    print(" ESTADÍSTICAS DESCRIPTIVAS ")
+    print("========================================")
 
-print(promedio_por_estacion.round(2))
-
-# ======================================================
-# CORRELACIONES
-# ======================================================
-
-print("\n========================================")
-print(" CORRELACIONES ")
-print("========================================")
-
-matriz_correlacion = df[
-    columnas_numericas
-].corr()
-
-print(
-    matriz_correlacion[
+    promedio_estadia = df[
         'PROMEDIO_DIAS_ESTADA'
-    ].sort_values(
-        ascending=False
+    ].mean()
+
+    mediana_estadia = df[
+        'PROMEDIO_DIAS_ESTADA'
+    ].median()
+
+    moda_estadia = df[
+        'PROMEDIO_DIAS_ESTADA'
+    ].mode()[0]
+
+    print(
+        f"\nPromedio estadía: "
+        f"{round(promedio_estadia,2)} días"
     )
-)
+
+    print(
+        f"Mediana estadía : "
+        f"{round(mediana_estadia,2)} días"
+    )
+
+    print(
+        f"Moda estadía    : "
+        f"{round(moda_estadia,2)} días"
+    )
+
+    resumen = df[[
+
+        'DIAS_CAMAS_OCUPADAS',
+        'NUMERO_EGRESOS',
+        'PROMEDIO_DIAS_ESTADA'
+    ]].describe()
+
+    print("\nResumen estadístico:")
+    print(resumen.round(2))
+
+    # PROMEDIO POR ESTACIÓN
+    print("\n========================================")
+    print(" PROMEDIO POR ESTACIÓN ")
+    print("========================================")
+
+    promedio_estacion = df.groupby(
+        'ESTACION'
+    )['PROMEDIO_DIAS_ESTADA'].mean()
+
+    print(promedio_estacion.round(2))
+
 
 # ======================================================
-# MAPA DE CALOR
+# GENERAR GRÁFICOS
 # ======================================================
 
-plt.figure(figsize=(12,8))
-
-sns.heatmap(
-
+def generar_graficos(
+    df,
     matriz_correlacion,
-
-    annot=True,
-    cmap='coolwarm',
-    fmt=".2f",
-    linewidths=0.5
-)
-
-plt.title(
-    'Mapa de calor de correlaciones'
-)
-
-plt.tight_layout()
-plt.show()
-
-# ======================================================
-# DISTRIBUCIÓN DE DÍAS DE ESTADÍA
-# ======================================================
-
-plt.figure(figsize=(8,5))
-
-df['PROMEDIO_DIAS_ESTADA'].hist(
-    bins=30
-)
-
-plt.title(
-    'Distribución de días de estadía'
-)
-
-plt.xlabel(
-    'Cantidad de días'
-)
-
-plt.ylabel(
-    'Frecuencia'
-)
-
-plt.show()
-
-# ======================================================
-# BOXPLOT POR ESTACIÓN
-# ======================================================
-
-plt.figure(figsize=(8,5))
-
-df.boxplot(
-
-    column='PROMEDIO_DIAS_ESTADA',
-    by='ESTACION'
-)
-
-plt.title(
-    'Días de estadía por estación'
-)
-
-plt.suptitle('')
-
-plt.ylabel(
-    'Días promedio'
-)
-
-plt.show()
-
-# ======================================================
-# CODIFICAR VARIABLES
-# ======================================================
-
-encoder_region = LabelEncoder()
-encoder_area = LabelEncoder()
-encoder_estacion = LabelEncoder()
-
-df['REGION_COD'] = encoder_region.fit_transform(
-    df['GLOSA_SSS']
-)
-
-df['AREA_COD'] = encoder_area.fit_transform(
-    df['AREA_FUNCIONAL']
-)
-
-df['ESTACION_COD'] = encoder_estacion.fit_transform(
-    df['ESTACION']
-)
-
-# ======================================================
-# VARIABLES PREDICTORAS
-# ======================================================
-
-X = df[[
-
-    'MES',
-    'REGION_COD',
-    'AREA_COD',
-    'DIAS_CAMAS_OCUPADAS',
-    'DIAS_CAMAS_DISPONIBLES',
-    'NUMERO_EGRESOS',
-    'EGRESOS_FALLECIDOS',
-    'TRASLADOS',
-    'INDICE_OCUPACIONAL',
-    'PROMEDIO_CAMAS_DISPONIBLE',
-    'LETALIDAD',
-    'INDICE_ROTACION',
-    'ESTACION_COD'
-]]
-
-# ======================================================
-# VARIABLE OBJETIVO
-# ======================================================
-
-y = df[
-    'PROMEDIO_DIAS_ESTADA'
-]
-
-# ======================================================
-# DIVIDIR DATOS
-# ======================================================
-
-X_entrenamiento, X_prueba, y_entrenamiento, y_prueba = train_test_split(
-
-    X,
-    y,
-    test_size=0.2,
-    random_state=42
-)
-
-# ======================================================
-# REGRESIÓN LINEAL
-# ======================================================
-
-modelo_lineal = LinearRegression()
-
-modelo_lineal.fit(
-    X_entrenamiento,
-    y_entrenamiento
-)
-
-prediccion_lineal = modelo_lineal.predict(
-    X_prueba
-)
-
-mae_lineal = mean_absolute_error(
-    y_prueba,
-    prediccion_lineal
-)
-
-r2_lineal = r2_score(
-    y_prueba,
-    prediccion_lineal
-)
-
-# ======================================================
-# ÁRBOL DE DECISIÓN
-# ======================================================
-
-modelo_arbol = DecisionTreeRegressor(
-
-    max_depth=10,
-    random_state=42
-)
-
-modelo_arbol.fit(
-    X_entrenamiento,
-    y_entrenamiento
-)
-
-prediccion_arbol = modelo_arbol.predict(
-    X_prueba
-)
-
-mae_arbol = mean_absolute_error(
-    y_prueba,
-    prediccion_arbol
-)
-
-r2_arbol = r2_score(
-    y_prueba,
-    prediccion_arbol
-)
-
-# ======================================================
-# RANDOM FOREST
-# ======================================================
-
-modelo_random_forest = RandomForestRegressor(
-
-    n_estimators=80,
-    max_depth=12,
-    random_state=42,
-    n_jobs=-1
-)
-
-modelo_random_forest.fit(
-    X_entrenamiento,
-    y_entrenamiento
-)
-
-prediccion_random_forest = modelo_random_forest.predict(
-    X_prueba
-)
-
-mae_random_forest = mean_absolute_error(
+    tabla_importancias,
     y_prueba,
     prediccion_random_forest
-)
+):
 
-r2_random_forest = r2_score(
-    y_prueba,
-    prediccion_random_forest
-)
+    # MAPA DE CALOR
+    plt.figure(figsize=(12,8))
 
-mape_random_forest = mean_absolute_percentage_error(
-    y_prueba,
-    prediccion_random_forest
-)
+    sns.heatmap(
 
-rmse_random_forest = np.sqrt(
+        matriz_correlacion,
 
-    mean_squared_error(
+        annot=True,
+        cmap='coolwarm',
+        fmt=".2f",
+        linewidths=0.5
+    )
+
+    plt.title(
+        'Mapa de calor de correlaciones'
+    )
+
+    plt.tight_layout()
+    plt.show()
+    plt.close()
+
+    # HISTOGRAMA
+    plt.figure(figsize=(8,5))
+
+    df['PROMEDIO_DIAS_ESTADA'].hist(
+        bins=30
+    )
+
+    plt.title(
+        'Distribución de días de estadía'
+    )
+
+    plt.xlabel(
+        'Cantidad de días'
+    )
+
+    plt.ylabel(
+        'Frecuencia'
+    )
+
+    plt.show()
+    plt.close()
+
+    # BOXPLOT
+    plt.figure(figsize=(8,5))
+
+    sns.boxplot(
+        x='ESTACION',
+        y='PROMEDIO_DIAS_ESTADA',
+        data=df
+    )
+
+    plt.title(
+        'Días de estadía por estación'
+    )
+
+    plt.ylabel(
+        'Días promedio'
+    )
+
+    plt.show()
+    plt.close()
+
+    # VARIABLES IMPORTANTES
+    plt.figure(figsize=(10,6))
+
+    plt.barh(
+
+        tabla_importancias['Variable'].head(10),
+        tabla_importancias['Importancia'].head(10)
+    )
+
+    plt.title(
+        'Variables más importantes'
+    )
+
+    plt.xlabel(
+        'Nivel de importancia'
+    )
+
+    plt.gca().invert_yaxis()
+
+    plt.show()
+    plt.close()
+
+    # REAL VS PREDICHO
+    plt.figure(figsize=(7,7))
+
+    plt.scatter(
+
         y_prueba,
         prediccion_random_forest
     )
-)
+
+    plt.xlabel(
+        'Valores reales'
+    )
+
+    plt.ylabel(
+        'Valores predichos'
+    )
+
+    plt.title(
+        'Comparación real vs predicho'
+    )
+
+    plt.grid(True)
+
+    plt.show()
+    plt.close()
+
+    # GRÁFICO POR ESTACIÓN
+    promedios_estacion = df.groupby(
+        'ESTACION'
+    )['PROMEDIO_DIAS_ESTADA'].mean()
+
+    promedios_estacion.plot(
+        kind='bar'
+    )
+
+    plt.title(
+        'Congestión hospitalaria según estación'
+    )
+
+    plt.ylabel(
+        'Promedio días de estadía'
+    )
+
+    plt.show()
+    plt.close()
+
 
 # ======================================================
-# VALIDACIÓN CRUZADA
+# PREPARAR VARIABLES
 # ======================================================
 
-scores_cv = cross_val_score(
+def preparar_variables(df):
 
-    modelo_random_forest,
-    X,
-    y,
-    cv=5,
-    scoring='r2'
-)
+    encoder_region = LabelEncoder()
+    encoder_area = LabelEncoder()
+    encoder_estacion = LabelEncoder()
 
-# ======================================================
-# RESULTADOS
-# ======================================================
+    df['REGION_COD'] = encoder_region.fit_transform(
+        df['GLOSA_SSS']
+    )
 
-print("\n========================================")
-print(" RESULTADOS DE LOS MODELOS ")
-print("========================================")
+    df['AREA_COD'] = encoder_area.fit_transform(
+        df['AREA_FUNCIONAL']
+    )
 
-print("\nRegresión Lineal")
-print(f"MAE  : {round(mae_lineal,2)}")
-print(f"R2   : {round(r2_lineal,2)}")
+    df['ESTACION_COD'] = encoder_estacion.fit_transform(
+        df['ESTACION']
+    )
 
-print("\nÁrbol de Decisión")
-print(f"MAE  : {round(mae_arbol,2)}")
-print(f"R2   : {round(r2_arbol,2)}")
+    X = df[[
 
-print("\nRandom Forest")
-print(f"MAE  : {round(mae_random_forest,2)}")
-print(f"R2   : {round(r2_random_forest,2)}")
-print(f"MAPE : {round(mape_random_forest * 100,2)}%")
-print(f"RMSE : {round(rmse_random_forest,2)}")
+        'MES',
+        'REGION_COD',
+        'AREA_COD',
+        'DIAS_CAMAS_OCUPADAS',
+        'DIAS_CAMAS_DISPONIBLES',
+        'NUMERO_EGRESOS',
+        'EGRESOS_FALLECIDOS',
+        'TRASLADOS',
+        'INDICE_OCUPACIONAL',
+        'PROMEDIO_CAMAS_DISPONIBLE',
+        'LETALIDAD',
+        'INDICE_ROTACION',
+        'ESTACION_COD'
+    ]]
 
-# ======================================================
-# VALIDACIÓN CRUZADA
-# ======================================================
+    y = df[
+        'PROMEDIO_DIAS_ESTADA'
+    ]
 
-print("\n========================================")
-print(" VALIDACIÓN CRUZADA ")
-print("========================================")
+    return train_test_split(
 
-print(
-    f"\nR2 promedio validación cruzada: "
-    f"{round(scores_cv.mean(),3)}"
-)
+        X,
+        y,
+        test_size=0.2,
+        random_state=42
+    )
 
-# ======================================================
-# MEJOR MODELO
-# ======================================================
-
-resultados_modelos = {
-
-    "Regresión Lineal": r2_lineal,
-    "Árbol de Decisión": r2_arbol,
-    "Random Forest": r2_random_forest
-}
-
-mejor_modelo = max(
-
-    resultados_modelos,
-    key=resultados_modelos.get
-)
-
-print("\n========================================")
-print(" MEJOR MODELO ")
-print("========================================")
-
-print(f"\nEl mejor modelo fue: {mejor_modelo}")
 
 # ======================================================
-# VARIABLES MÁS IMPORTANTES
+# ENTRENAR MODELOS
 # ======================================================
 
-print("\n========================================")
-print(" VARIABLES MÁS IMPORTANTES ")
-print("========================================")
-
-tabla_importancias = pd.DataFrame({
-
-    'Variable': X.columns,
-    'Importancia': modelo_random_forest.feature_importances_
-})
-
-tabla_importancias = tabla_importancias.sort_values(
-
-    by='Importancia',
-    ascending=False
-)
-
-print(tabla_importancias.head(10))
-
-# ======================================================
-# GRÁFICO VARIABLES IMPORTANTES
-# ======================================================
-
-plt.figure(figsize=(10,6))
-
-plt.barh(
-
-    tabla_importancias['Variable'].head(10),
-    tabla_importancias['Importancia'].head(10)
-)
-
-plt.title(
-    'Variables más importantes'
-)
-
-plt.xlabel(
-    'Nivel de importancia'
-)
-
-plt.gca().invert_yaxis()
-
-plt.show()
-
-# ======================================================
-# GRÁFICO REAL VS PREDICHO
-# ======================================================
-
-plt.figure(figsize=(7,7))
-
-plt.scatter(
-
+def entrenar_modelos(
+    X_entrenamiento,
+    X_prueba,
+    y_entrenamiento,
     y_prueba,
-    prediccion_random_forest
-)
+    X,
+    y
+):
 
-plt.xlabel(
-    'Valores reales'
-)
+    # REGRESIÓN LINEAL
+    modelo_lineal = LinearRegression()
 
-plt.ylabel(
-    'Valores predichos'
-)
+    modelo_lineal.fit(
+        X_entrenamiento,
+        y_entrenamiento
+    )
 
-plt.title(
-    'Comparación real vs predicho'
-)
+    prediccion_lineal = modelo_lineal.predict(
+        X_prueba
+    )
 
-plt.show()
+    # ÁRBOL
+    modelo_arbol = DecisionTreeRegressor(
 
-# ======================================================
-# PREDICCIÓN POR ESTACIÓN
-# ======================================================
+        max_depth=10,
+        random_state=42
+    )
 
-print("\n========================================")
-print(" PREDICIÓN POR ESTACIÓN ")
-print("========================================")
+    modelo_arbol.fit(
+        X_entrenamiento,
+        y_entrenamiento
+    )
 
-prediccion_estaciones = df.groupby(
-    'ESTACION'
-)['PROMEDIO_DIAS_ESTADA'].mean()
+    prediccion_arbol = modelo_arbol.predict(
+        X_prueba
+    )
 
-print(prediccion_estaciones.round(2))
+    # RANDOM FOREST
+    modelo_random_forest = RandomForestRegressor(
+
+        n_estimators=80,
+        max_depth=12,
+        random_state=42,
+        n_jobs=-1
+    )
+
+    modelo_random_forest.fit(
+        X_entrenamiento,
+        y_entrenamiento
+    )
+
+    prediccion_random_forest = modelo_random_forest.predict(
+        X_prueba
+    )
+
+    # MÉTRICAS
+    mae_lineal = mean_absolute_error(
+        y_prueba,
+        prediccion_lineal
+    )
+
+    r2_lineal = r2_score(
+        y_prueba,
+        prediccion_lineal
+    )
+
+    mae_arbol = mean_absolute_error(
+        y_prueba,
+        prediccion_arbol
+    )
+
+    r2_arbol = r2_score(
+        y_prueba,
+        prediccion_arbol
+    )
+
+    mae_random_forest = mean_absolute_error(
+        y_prueba,
+        prediccion_random_forest
+    )
+
+    r2_random_forest = r2_score(
+        y_prueba,
+        prediccion_random_forest
+    )
+
+    mape_random_forest = mean_absolute_percentage_error(
+        y_prueba,
+        prediccion_random_forest
+    )
+
+    rmse_random_forest = np.sqrt(
+
+        mean_squared_error(
+            y_prueba,
+            prediccion_random_forest
+        )
+    )
+
+    # VALIDACIÓN CRUZADA
+    scores_cv = cross_val_score(
+
+        modelo_random_forest,
+        X,
+        y,
+        cv=5,
+        scoring='r2'
+    )
+
+    # RESULTADOS
+    print("\n========================================")
+    print(" RESULTADOS DE LOS MODELOS ")
+    print("========================================")
+
+    print("\nRegresión Lineal")
+    print(f"MAE  : {round(mae_lineal,2)}")
+    print(f"R2   : {round(r2_lineal,2)}")
+
+    print("\nÁrbol de Decisión")
+    print(f"MAE  : {round(mae_arbol,2)}")
+    print(f"R2   : {round(r2_arbol,2)}")
+
+    print("\nRandom Forest")
+    print(f"MAE  : {round(mae_random_forest,2)}")
+    print(f"R2   : {round(r2_random_forest,2)}")
+    print(f"MAPE : {round(mape_random_forest * 100,2)}%")
+    print(f"RMSE : {round(rmse_random_forest,2)}")
+
+    print("\n========================================")
+    print(" VALIDACIÓN CRUZADA ")
+    print("========================================")
+
+    print(
+        f"\nR2 promedio validación cruzada: "
+        f"{round(scores_cv.mean(),3)}"
+    )
+
+    # IMPORTANCIAS
+    tabla_importancias = pd.DataFrame({
+
+        'Variable': X.columns,
+        'Importancia': modelo_random_forest.feature_importances_
+    })
+
+    tabla_importancias = tabla_importancias.sort_values(
+
+        by='Importancia',
+        ascending=False
+    )
+
+    return (
+        modelo_random_forest,
+        tabla_importancias,
+        prediccion_random_forest
+    )
+
 
 # ======================================================
 # PREDICCIÓN FUTURA
 # ======================================================
 
-print("\n========================================")
-print(" PREDICCIÓN FUTURA ")
-print("========================================")
+def prediccion_futura(modelo_random_forest):
 
-datos_nuevos = pd.DataFrame({
+    print("\n========================================")
+    print(" PREDICCIÓN FUTURA ")
+    print("========================================")
 
-    'MES': [7],
-    'REGION_COD': [3],
-    'AREA_COD': [5],
-    'DIAS_CAMAS_OCUPADAS': [180],
-    'DIAS_CAMAS_DISPONIBLES': [200],
-    'NUMERO_EGRESOS': [50],
-    'EGRESOS_FALLECIDOS': [5],
-    'TRASLADOS': [20],
-    'INDICE_OCUPACIONAL': [90],
-    'PROMEDIO_CAMAS_DISPONIBLE': [6],
-    'LETALIDAD': [10],
-    'INDICE_ROTACION': [2],
-    'ESTACION_COD': [0]
-})
+    datos_nuevos = pd.DataFrame({
 
-prediccion_final = modelo_random_forest.predict(
-    datos_nuevos
-)
+        'MES': [7],
+        'REGION_COD': [3],
+        'AREA_COD': [5],
+        'DIAS_CAMAS_OCUPADAS': [180],
+        'DIAS_CAMAS_DISPONIBLES': [200],
+        'NUMERO_EGRESOS': [50],
+        'EGRESOS_FALLECIDOS': [5],
+        'TRASLADOS': [20],
+        'INDICE_OCUPACIONAL': [90],
+        'PROMEDIO_CAMAS_DISPONIBLE': [6],
+        'LETALIDAD': [10],
+        'INDICE_ROTACION': [2],
+        'ESTACION_COD': [0]
+    })
 
-print(
+    prediccion = modelo_random_forest.predict(
+        datos_nuevos
+    )
 
-    f"\nTiempo estimado de congestión hospitalaria: "
-    f"{round(prediccion_final[0],2)} días"
-)
+    print(
 
-# ======================================================
-# GRÁFICO POR ESTACIÓN
-# ======================================================
+        f"\nTiempo estimado de congestión hospitalaria: "
+        f"{round(prediccion[0],2)} días"
+    )
 
-promedios_estacion = df.groupby(
-    'ESTACION'
-)['PROMEDIO_DIAS_ESTADA'].mean()
-
-promedios_estacion.plot(
-    kind='bar'
-)
-
-plt.title(
-    'Congestión hospitalaria según estación'
-)
-
-plt.ylabel(
-    'Promedio días de estadía'
-)
-
-plt.show()
 
 # ======================================================
 # CONCLUSIONES
 # ======================================================
 
-print("\n========================================")
-print(" CONCLUSIONES ")
-print("========================================")
+def mostrar_conclusiones():
 
-print("""
+    print("\n========================================")
+    print(" CONCLUSIONES ")
+    print("========================================")
+
+    print("""
 
 El proyecto permitió analizar datos hospitalarios
-reales obtenidos desde datos.gob.cl utilizando
-técnicas de Machine Learning.
-
-Se aplicaron distintos modelos predictivos
-para estimar niveles de congestión hospitalaria,
-comparando sus resultados mediante métricas
-estadísticas.
+reales utilizando técnicas de Machine Learning.
 
 El modelo Random Forest obtuvo el mejor
-rendimiento, logrando detectar relaciones
-más complejas entre las variables.
+rendimiento predictivo.
 
-Las variables más influyentes fueron:
-
-- ocupación hospitalaria
-- días camas ocupadas
-- número de egresos
-- índice de rotación
-- estación del año
-
-Los resultados muestran que durante invierno
-existe una mayor presión hospitalaria y un
-aumento en los días promedio de estadía.
-
-Además, los gráficos permitieron visualizar
-patrones importantes entre las variables y
-comprender mejor el comportamiento de los datos.
-
-Limitaciones del proyecto:
-
-- algunos datos pueden contener errores
-- no se consideran pandemias
-- no se incluyeron variables climáticas
-- existen diferencias de registros entre regiones
-
-Como trabajo futuro se podría desarrollar
-una aplicación en tiempo real para monitorear
-la congestión hospitalaria usando IA.
+Durante invierno existe una mayor presión
+hospitalaria y un aumento en los días
+promedio de estadía.
 
 """)
+
+
+# ======================================================
+# MAIN
+# ======================================================
+
+if __name__ == "__main__":
+
+    # DESCARGAR
+    df = descargar_datos()
+
+    # LIMPIAR
+    df = preparar_dataframe(df)
+
+    # CREAR ESTACIÓN
+    df['ESTACION'] = df['MES'].apply(
+        obtener_estacion
+    )
+
+    # ESTADÍSTICAS
+    mostrar_estadisticas(df)
+
+    # CORRELACIÓN
+    columnas_numericas = [
+
+        'MES',
+        'DIAS_CAMAS_OCUPADAS',
+        'DIAS_CAMAS_DISPONIBLES',
+        'DIAS_ESTADA',
+        'NUMERO_EGRESOS',
+        'EGRESOS_FALLECIDOS',
+        'TRASLADOS',
+        'INDICE_OCUPACIONAL',
+        'PROMEDIO_CAMAS_DISPONIBLE',
+        'PROMEDIO_DIAS_ESTADA',
+        'LETALIDAD',
+        'INDICE_ROTACION'
+    ]
+
+    matriz_correlacion = df[
+        columnas_numericas
+    ].corr()
+
+    # VARIABLES ML
+    (
+        X_entrenamiento,
+        X_prueba,
+        y_entrenamiento,
+        y_prueba
+    ) = preparar_variables(df)
+
+    X = pd.concat([
+        X_entrenamiento,
+        X_prueba
+    ])
+
+    y = pd.concat([
+        y_entrenamiento,
+        y_prueba
+    ])
+
+    # MODELOS
+    (
+        modelo_random_forest,
+        tabla_importancias,
+        prediccion_random_forest
+    ) = entrenar_modelos(
+
+        X_entrenamiento,
+        X_prueba,
+        y_entrenamiento,
+        y_prueba,
+        X,
+        y
+    )
+
+    # GRÁFICOS
+    generar_graficos(
+
+        df,
+        matriz_correlacion,
+        tabla_importancias,
+        y_prueba,
+        prediccion_random_forest
+    )
+
+    # PREDICCIÓN FUTURA
+    prediccion_futura(
+        modelo_random_forest
+    )
+
+    # CONCLUSIONES
+    mostrar_conclusiones()
